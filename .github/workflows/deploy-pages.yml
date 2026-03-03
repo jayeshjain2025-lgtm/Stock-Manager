@@ -1,4 +1,4 @@
-name: Deploy app to GitHub Pages
+name: Deploy WASM app to GitHub Pages
 
 on:
   push:
@@ -26,10 +26,10 @@ jobs:
         with:
           version: 3.1.64
 
-      - name: Build WASM module
+      - name: Build WebAssembly bundle
         run: |
-          mkdir -p docs/wasm
-          emcc main.c -O2 -sALLOW_MEMORY_GROWTH=1 -sEXIT_RUNTIME=1 -o docs/wasm/stock.js
+          mkdir -p docs
+          emcc main.c -O2 -sALLOW_MEMORY_GROWTH=1 -sEXIT_RUNTIME=1 -o docs/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

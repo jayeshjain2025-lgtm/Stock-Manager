@@ -1,6 +1,6 @@
 stock_manager
 inventory.txt
-docs/wasm/*.wasm
-docs/wasm/*.js
-docs/wasm/*.data
-docs/wasm/*.worker.js
+docs/*.wasm
+docs/*.js
+docs/*.data
+docs/*.worker.js
