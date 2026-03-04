@@ -1,42 +1,26 @@
-# Stock Manager (C + Interactive Web UI + WASM-ready)
+# Stock Manager (C + WASM)
 
-Stock Manager includes:
+A menu-driven **Inventory Management System** written in C for a small shop.
 
-- A **C implementation** (`main.c`) for course requirements.
-- A modern **interactive frontend** (`docs/index.html`) for GitHub Pages demos.
-- A CI workflow that builds C to **WebAssembly artifacts** under `docs/wasm/`.
-
-## Inventory Features
+## Features
 
 - Add product (`ProductID`, `Name`, `Price`, `Quantity`)
-- Update stock (purchase/sale)
+- Update stock for purchase/sale
 - Delete a product
-- Search by Product ID
-- Save/load from file:
-  - C app: `inventory.txt`
-  - Web UI: JSON import/export + localStorage autosave
-- Low-stock report (items below threshold)
+- Search by `ProductID`
+- Save/load inventory from file
+- Low-stock report (items below a threshold)
 - Total inventory value `Σ(price × quantity)`
 
-## C Concepts Covered (in `main.c`)
+## Required C Concepts Covered
 
-- Menu-driven app with `switch/case`
-- 5+ user-defined functions
+- `switch/case` menu program
+- 10+ user-defined functions
 - `struct Product`
-- File handling (save/load)
-- Input validation and range checks
+- File handling (`inventory.txt`)
+- Input validation with robust parsing/range checks
 
-## Run the Interactive Frontend (recommended)
-
-Open `docs/index.html` in a browser, or serve the `docs/` directory:
-
-```bash
-python3 -m http.server 8080 --directory docs
-```
-
-Then open `http://localhost:8080`.
-
-## Run C Program Locally (Native)
+## Run Locally (Native)
 
 ```bash
 gcc -std=c11 -Wall -Wextra -pedantic main.c -o stock_manager
@@ -47,42 +31,51 @@ gcc -std=c11 -Wall -Wextra -pedantic main.c -o stock_manager
 
 ### Option 1: MSYS2 + MinGW-w64 GCC (recommended)
 
+1. Install MSYS2 from: https://www.msys2.org/
+2. Open **MSYS2 UCRT64** terminal.
+3. Install GCC:
+
 ```bash
 pacman -S --needed mingw-w64-ucrt-x86_64-gcc
+```
+
+4. Build and run:
+
+```bash
 gcc -std=c11 -Wall -Wextra -pedantic main.c -o stock_manager.exe
 ./stock_manager.exe
 ```
 
 ### Option 2: Visual Studio Developer Command Prompt (MSVC)
 
+1. Install **Visual Studio** (or Build Tools) with C++ workload.
+2. Open **x64 Native Tools Command Prompt for VS** in this project folder.
+3. Build and run:
+
 ```bat
 cl /W4 /EHsc main.c /Fe:stock_manager.exe
 stock_manager.exe
 ```
 
-## WebAssembly Build (manual)
+## Data File Location
+
+- The app reads/writes `inventory.txt` in the **current working directory**.
+- On Windows, run the program from the project folder if you want `inventory.txt` saved there.
+
+## Build for WebAssembly (Emscripten)
 
 ```bash
-mkdir -p docs/wasm
-emcc main.c -O2 -sALLOW_MEMORY_GROWTH=1 -sENVIRONMENT=web -sINVOKE_RUN=0 -o docs/wasm/stock.js
+emcc main.c -O2 -sALLOW_MEMORY_GROWTH=1 -sEXIT_RUNTIME=1 -o docs/index.html
 ```
 
-## GitHub Pages Deployment
+Then serve `docs/` with any static server, or enable GitHub Pages from the `gh-pages` artifact via Actions (workflow included below).
 
-Workflow: `.github/workflows/deploy-pages.yml`
+## GitHub Pages Deployment (WASM)
 
-- Installs Emscripten
-- Builds `main.c` into `docs/wasm/` (JS+WASM module)
-- Ensures `docs/index.html` remains the site entrypoint
-- Deploys `docs/` to GitHub Pages
+This repository includes `.github/workflows/deploy-pages.yml`.
 
-## If you see “Emscripten-Generated Code / Exception thrown”
+- It installs Emscripten
+- Builds `main.c` to WebAssembly output in `docs/`
+- Uploads and deploys to GitHub Pages
 
-That means you opened an Emscripten shell page (or deployed one as root) instead of this app UI.
-
-Use the site root URL:
-
-- `https://<username>.github.io/<repo>/`
-
-Do **not** use an Emscripten-generated HTML output as the root `index.html`.
-This repo's interactive app must stay at `docs/index.html`.
+> After pushing to `main`, enable **Pages** in repository settings to use **GitHub Actions** as the source.

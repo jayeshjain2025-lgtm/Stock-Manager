@@ -1,4 +1,4 @@
-name: Deploy app to GitHub Pages
+name: Deploy WASM app to GitHub Pages
 
 on:
   push:
@@ -26,21 +26,10 @@ jobs:
         with:
           version: 3.1.64
 
-      - name: Build WASM module (no emscripten HTML shell)
+      - name: Build WebAssembly bundle
         run: |
-          mkdir -p docs/wasm
-          emcc main.c \
-            -O2 \
-            -sALLOW_MEMORY_GROWTH=1 \
-            -sENVIRONMENT=web \
-            -sINVOKE_RUN=0 \
-            -o docs/wasm/stock.js
-
-      - name: Ensure app entrypoint exists
-        run: test -f docs/index.html
-
-      - name: Disable Jekyll processing
-        run: touch docs/.nojekyll
+          mkdir -p docs
+          emcc main.c -O2 -sALLOW_MEMORY_GROWTH=1 -sEXIT_RUNTIME=1 -o docs/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
