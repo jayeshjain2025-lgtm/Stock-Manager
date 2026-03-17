@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Manager Web</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f4f4f9; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f8f9fa; }
+        input { padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        button { padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #0056b3; }
+        button.danger { background: #dc3545; }
+        button.danger:hover { background: #c82333; }
+        button.small { padding: 4px 8px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end; }
+        .low-stock { background-color: #fff3cd !important; }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; }
+        .val { font-size: 1.25em; font-weight: bold; color: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>📦 Stock Manager</h1>
+
+    <div class="card">
+        <h2>Add New Product</h2>
+        <div class="grid">
+            <div><label>ID</label><input type="number" id="pId" placeholder="101" min="1"></div>
+            <div><label>Name</label><input type="text" id="pName" placeholder="Product Name"></div>
+            <div><label>Price ($)</label><input type="number" id="pPrice" step="0.01" placeholder="9.99" min="0"></div>
+            <div><label>Quantity</label><input type="number" id="pQty" placeholder="50" min="0"></div>
+            <div><button onclick="addProduct()" style="width: 100%;">Add Product</button></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="header-flex">
+            <h2>Current Inventory</h2>
+            <div>Total Value: $<span id="totalValue" class="val">0.00</span></div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody">
+                <tr><td colspan="5" style="text-align: center;">Loading WASM Engine...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="stock.js"></script>
+    <script>
+        Module.onRuntimeInitialized = () => {
+            renderTable();
+        };
+
+        function addProduct() {
+            const id = parseInt(document.getElementById('pId').value);
+            const name = document.getElementById('pName').value;
+            const price = parseFloat(document.getElementById('pPrice').value);
+            const qty = parseInt(document.getElementById('pQty').value);
+
+            if (!id || !name || isNaN(price) || isNaN(qty)) {
+                alert("Please fill all fields correctly.");
+                return;
+            }
+
+            const result = Module.ccall('add_product', 'number', ['number', 'string', 'number', 'number'], [id, name, price, qty]);
+            if (result === -1) alert("Inventory is full!");
+            else if (result === 0) alert("Product ID already exists!");
+            else {
+                document.querySelectorAll('input').forEach(el => el.value = '');
+                renderTable();
+            }
+        }
+
+        function updateStock(id, amount) {
+            const result = Module.ccall('update_product_stock', 'number', ['number', 'number'], [id, amount]);
+            if (result === -1) alert("Insufficient stock for this sale!");
+            else renderTable();
+        }
+
+        function deleteProduct(id) {
+            if (confirm(`Are you sure you want to delete product ID ${id}?`)) {
+                Module.ccall('delete_product_by_id', 'number', ['number'], [id]);
+                renderTable();
+            }
+        }
+
+        function renderTable() {
+            const count = Module.ccall('get_product_count', 'number', [], []);
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = count === 0 ? '<tr><td colspan="5" style="text-align: center;">No products in inventory.</td></tr>' : '';
+
+            for (let i = 0; i < count; i++) {
+                const id = Module.ccall('get_product_id', 'number', ['number'], [i]);
+                const name = Module.ccall('get_product_name', 'string', ['number'], [i]); // Decodes C string ptr automatically!
+                const price = Module.ccall('get_product_price', 'number', ['number'], [i]);
+                const qty = Module.ccall('get_product_quantity', 'number', ['number'], [i]);
+
+                const tr = document.createElement('tr');
+                if (qty < 5) tr.className = 'low-stock';
+                
+                tr.innerHTML = `
+                    <td>${id}</td>
+                    <td>${name}</td>
+                    <td>$${price.toFixed(2)}</td>
+                    <td>
+                        <button class="small" onclick="updateStock(${id}, -1)">-</button>
+                        <span style="display:inline-block; width: 30px; text-align:center;">${qty}</span>
+                        <button class="small" onclick="updateStock(${id}, 1)">+</button>
+                    </td>
+                    <td><button class="danger small" onclick="deleteProduct(${id})">Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            document.getElementById('totalValue').innerText = Module.ccall('get_total_value', 'number', [], []).toFixed(2);
+        }
+    </script>
+</body>
+</html>

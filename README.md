@@ -65,7 +65,7 @@ stock_manager.exe
 ## Build for WebAssembly (Emscripten)
 
 ```bash
-emcc main.c -O2 -sALLOW_MEMORY_GROWTH=1 -sEXIT_RUNTIME=1 -o docs/index.html
+emcc main.c -O2 -sALLOW_MEMORY_GROWTH=1 -sEXPORTED_FUNCTIONS="['_malloc', '_free']" -sEXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" --no-entry -o docs/stock.js
 ```
 
 Then serve `docs/` with any static server, or enable GitHub Pages from the `gh-pages` artifact via Actions (workflow included below).
