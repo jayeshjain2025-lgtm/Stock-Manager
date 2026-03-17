@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #define MAX_PRODUCTS 1000
 #define NAME_LENGTH 64
 #define DATA_FILE "inventory.txt"
@@ -28,6 +32,7 @@ int saveToFile(Product inventory[], int count, const char *filename);
 int loadFromFile(Product inventory[], int *count, const char *filename);
 void displayMenu(void);
 
+#ifndef __EMSCRIPTEN__
 int main(void) {
     Product inventory[MAX_PRODUCTS] = {0};
     int count = 0;
@@ -88,6 +93,85 @@ int main(void) {
 
     return 0;
 }
+#endif
+
+#ifdef __EMSCRIPTEN__
+Product global_inventory[MAX_PRODUCTS] = {0};
+int global_count = 0;
+
+EMSCRIPTEN_KEEPALIVE
+int add_product(int id, const char* name, double price, int quantity) {
+    if (global_count >= MAX_PRODUCTS) return -1;
+    if (findProductIndexById(global_inventory, global_count, id) != -1) return 0;
+    
+    Product p;
+    p.productId = id;
+    strncpy(p.name, name, NAME_LENGTH - 1);
+    p.name[NAME_LENGTH - 1] = '\0';
+    p.price = price;
+    p.quantity = quantity;
+    p.inUse = 1;
+    
+    global_inventory[global_count++] = p;
+    return 1;
+}
+
+EMSCRIPTEN_KEEPALIVE
+int get_product_count() {
+    return global_count;
+}
+
+EMSCRIPTEN_KEEPALIVE
+int get_product_id(int index) {
+    return global_inventory[index].productId;
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* get_product_name(int index) {
+    return global_inventory[index].name;
+}
+
+EMSCRIPTEN_KEEPALIVE
+double get_product_price(int index) {
+    return global_inventory[index].price;
+}
+
+EMSCRIPTEN_KEEPALIVE
+int get_product_quantity(int index) {
+    return global_inventory[index].quantity;
+}
+
+EMSCRIPTEN_KEEPALIVE
+int update_product_stock(int id, int amount) {
+    int index = findProductIndexById(global_inventory, global_count, id);
+    if (index == -1) return 0;
+    if (global_inventory[index].quantity + amount < 0) return -1;
+    global_inventory[index].quantity += amount;
+    return 1;
+}
+
+EMSCRIPTEN_KEEPALIVE
+int delete_product_by_id(int id) {
+    int index = findProductIndexById(global_inventory, global_count, id);
+    if (index == -1) return 0;
+    for (int i = index; i < global_count - 1; i++) {
+        global_inventory[i] = global_inventory[i + 1];
+    }
+    global_count--;
+    return 1;
+}
+
+EMSCRIPTEN_KEEPALIVE
+double get_total_value() {
+    double total = 0.0;
+    for (int i = 0; i < global_count; i++) {
+        if (global_inventory[i].inUse) {
+            total += global_inventory[i].price * global_inventory[i].quantity;
+        }
+    }
+    return total;
+}
+#endif
 
 void displayMenu(void) {
     printf("\n=== Inventory Management System ===\n");
