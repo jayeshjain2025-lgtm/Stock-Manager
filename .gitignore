@@ -1,6 +1,13 @@
 stock_manager
 inventory.txt
-docs/*.wasm
-docs/*.js
-docs/*.data
-docs/*.worker.js
+emsdk/
+node_modules/
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.o
+*.a
+
