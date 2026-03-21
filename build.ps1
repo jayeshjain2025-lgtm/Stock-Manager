@@ -18,10 +18,11 @@ if (-not (Test-Path "docs")) {
 
 # Compile C to WebAssembly
 Write-Host "⏳ Compiling main.c to WebAssembly..." -ForegroundColor Cyan
+$exportedFunctions = "'_malloc', '_free', '_add_product', '_get_product_count', '_get_product_id', '_get_product_name', '_get_product_price', '_get_product_quantity', '_update_product_stock', '_delete_product_by_id', '_get_total_value'"
 & emcc main.c `
     -O2 `
     -sALLOW_MEMORY_GROWTH=1 `
-    -sEXPORTED_FUNCTIONS="['_malloc', '_free']" `
+    "-sEXPORTED_FUNCTIONS=[$exportedFunctions]" `
     -sEXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']" `
     --no-entry `
     -o docs/stock.js
