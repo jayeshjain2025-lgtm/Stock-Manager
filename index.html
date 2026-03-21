@@ -470,6 +470,18 @@
                     <input type="number" id="pQty" placeholder="50" min="0" max="999999">
                 </div>
                 <div class="form-group">
+                    <label for="pDistName">Distributor Name (optional)</label>
+                    <input type="text" id="pDistName" placeholder="Supplier ABC" maxlength="64">
+                </div>
+                <div class="form-group">
+                    <label for="pDistEmail">Distributor Email (optional)</label>
+                    <input type="email" id="pDistEmail" placeholder="supplier@example.com" maxlength="128">
+                </div>
+                <div class="form-group">
+                    <label for="pDistPhone">Distributor Phone (optional)</label>
+                    <input type="tel" id="pDistPhone" placeholder="+1234567890" maxlength="32">
+                </div>
+                <div class="form-group">
                     <button class="btn-primary" onclick="addProduct()">Add Product</button>
                 </div>
             </div>
@@ -490,6 +502,7 @@
                             <th>Price</th>
                             <th>Quantity</th>
                             <th>Total Value</th>
+                            <th>Distributor</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -506,9 +519,20 @@
         </div>
     </div>
 
-    <script src="stock.js"></script>
     <script>
-        let wasmReady = false;
+        const inventory = [];
+        const MAX_PRODUCTS = 1000;
+        const LOW_STOCK_THRESHOLD = 5;
+
+        function isValidEmail(email) {
+            if (!email) return true;
+            return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*\.\w{2,}$/.test(email);
+        }
+
+        function isValidPhone(phone) {
+            if (!phone) return true;
+            return /^[\d+()\-\s]{6,32}$/.test(phone);
+        }
 
         function showAlert(message, type = 'success') {
             const alertContainer = document.getElementById('alertContainer');
@@ -525,6 +549,9 @@
             document.getElementById('pName').value = '';
             document.getElementById('pPrice').value = '';
             document.getElementById('pQty').value = '';
+            document.getElementById('pDistName').value = '';
+            document.getElementById('pDistEmail').value = '';
+            document.getElementById('pDistPhone').value = '';
         }
 
         function clearInputErrors() {
@@ -560,123 +587,161 @@
             return isValid;
         }
 
-        function addProduct() {
-            if (!wasmReady) {
-                showAlert('WASM Engine not ready', 'error');
-                return;
-            }
+        function getProductIndexById(id) {
+            return inventory.findIndex(item => item.productId === id);
+        }
 
+        function addProduct() {
             if (!validateForm()) {
                 showAlert('Please fill in all fields correctly', 'error');
                 return;
             }
 
-            const id = parseInt(document.getElementById('pId').value);
+            if (inventory.length >= MAX_PRODUCTS) {
+                showAlert('❌ Inventory is full! Maximum capacity reached.', 'error');
+                return;
+            }
+
+            const id = parseInt(document.getElementById('pId').value, 10);
             const name = document.getElementById('pName').value.trim();
             const price = parseFloat(document.getElementById('pPrice').value);
-            const qty = parseInt(document.getElementById('pQty').value);
+            const qty = parseInt(document.getElementById('pQty').value, 10);
+            const distName = document.getElementById('pDistName').value.trim();
+            const distEmail = document.getElementById('pDistEmail').value.trim();
+            const distPhone = document.getElementById('pDistPhone').value.trim();
 
-            const result = Module.ccall('add_product', 'number', ['number', 'string', 'number', 'number'], [id, name, price, qty]);
-            
-            if (result === -1) {
-                showAlert('❌ Inventory is full! Maximum capacity reached.', 'error');
-            } else if (result === 0) {
-                showAlert('❌ Product ID already exists! Use a different ID.', 'error');
-            } else {
-                showAlert('✓ Product added successfully!', 'success');
-                clearForm();
-                renderTable();
+            if (!isValidEmail(distEmail)) {
+                showAlert('❌ Supplier email is invalid.', 'error');
+                return;
             }
+
+            if (!isValidPhone(distPhone)) {
+                showAlert('❌ Supplier phone is invalid.', 'error');
+                return;
+            }
+
+            if (getProductIndexById(id) !== -1) {
+                showAlert('❌ Product ID already exists! Use a different ID.', 'error');
+                return;
+            }
+
+            inventory.push({
+                productId: id,
+                name,
+                price,
+                quantity: qty,
+                distributor: {
+                    name: distName || 'Not specified',
+                    email: distEmail,
+                    phone: distPhone
+                }
+            });
+            showAlert('✓ Product added successfully!', 'success');
+            clearForm();
+            renderTable();
         }
 
         function updateStock(id, amount) {
-            if (!wasmReady) {
-                showAlert('WASM Engine not ready', 'error');
+            const idx = getProductIndexById(id);
+            if (idx === -1) {
+                showAlert('❌ Product not found!', 'error');
                 return;
             }
 
-            const result = Module.ccall('update_product_stock', 'number', ['number', 'number'], [id, amount]);
-            if (result === -1) {
+            if (inventory[idx].quantity + amount < 0) {
                 showAlert('❌ Insufficient stock! Cannot sell more than available.', 'warning');
-            } else if (result === 0) {
-                showAlert('❌ Product not found!', 'error');
-            } else {
-                renderTable();
+                return;
             }
+
+            inventory[idx].quantity += amount;
+            renderTable();
         }
 
         function deleteProduct(id) {
-            if (!wasmReady) {
-                showAlert('WASM Engine not ready', 'error');
+            const idx = getProductIndexById(id);
+            if (idx === -1) {
+                showAlert('❌ Product not found!', 'error');
                 return;
             }
 
-            if (confirm(`⚠️ Are you sure you want to delete product ID ${id}? This cannot be undone.`)) {
-                const result = Module.ccall('delete_product_by_id', 'number', ['number'], [id]);
-                if (result === 0) {
-                    showAlert('❌ Product not found!', 'error');
-                } else {
-                    showAlert('✓ Product deleted successfully!', 'success');
-                    renderTable();
-                }
+            if (!confirm(`⚠️ Are you sure you want to delete product ID ${id}? This cannot be undone.`)) {
+                return;
             }
+
+            inventory.splice(idx, 1);
+            showAlert('✓ Product deleted successfully!', 'success');
+            renderTable();
         }
 
         function renderTable() {
-            const count = Module.ccall('get_product_count', 'number', [], []);
             const tbody = document.getElementById('inventoryBody');
             const tableContainer = document.getElementById('tableContainer');
             const emptyState = document.getElementById('emptyState');
 
             tbody.innerHTML = '';
 
-            if (count === 0) {
+            if (inventory.length === 0) {
                 tableContainer.style.display = 'none';
                 emptyState.style.display = 'block';
             } else {
                 emptyState.style.display = 'none';
                 tableContainer.style.display = 'block';
 
-                for (let i = 0; i < count; i++) {
-                    const id = Module.ccall('get_product_id', 'number', ['number'], [i]);
-                    const name = Module.ccall('get_product_name', 'string', ['number'], [i]);
-                    const price = Module.ccall('get_product_price', 'number', ['number'], [i]);
-                    const qty = Module.ccall('get_product_quantity', 'number', ['number'], [i]);
-                    const totalValue = price * qty;
-
+                inventory.forEach(item => {
+                    const totalValue = item.price * item.quantity;
                     const tr = document.createElement('tr');
-                    if (qty < 5) tr.className = 'low-stock';
+                    if (item.quantity < LOW_STOCK_THRESHOLD) tr.className = 'low-stock';
 
-                    const lowStockWarning = qty < 5 ? '<span class="low-stock-badge">Low Stock</span>' : '';
+                    const lowStockWarning = item.quantity < LOW_STOCK_THRESHOLD ? '<span class="low-stock-badge">Low Stock</span>' : '';
+
+                    let distributorContact = '';
+                    if (item.quantity < LOW_STOCK_THRESHOLD) {
+                        distributorContact = '<div class="low-stock-action"><strong>Low stock!</strong><br>';
+                        if (item.distributor.phone) {
+                            distributorContact += `<a href="tel:${item.distributor.phone}" class="btn-small btn-primary" style="margin-right:6px; display:inline-block; margin-top:4px;">Call Distributor</a>`;
+                        }
+                        if (item.distributor.email) {
+                            distributorContact += `<a href="mailto:${item.distributor.email}?subject=Restock%20request%20for%20${encodeURIComponent(item.name)}" class="btn-small btn-primary" style="display:inline-block; margin-top:4px;">Email Distributor</a>`;
+                        }
+                        if (!item.distributor.phone && !item.distributor.email) {
+                            distributorContact += '<span style="font-size:0.85em; color:#666;">Distributor contact not provided</span>';
+                        }
+                        distributorContact += '</div>';
+                    }
 
                     tr.innerHTML = `
-                        <td><strong>${id}</strong></td>
-                        <td>${name}${lowStockWarning}</td>
-                        <td>$${price.toFixed(2)}</td>
+                        <td><strong>${item.productId}</strong></td>
+                        <td>${item.name}${lowStockWarning}</td>
+                        <td>$${item.price.toFixed(2)}</td>
                         <td>
                             <div class="qty-controls">
-                                <button class="btn-small btn-decrease" onclick="updateStock(${id}, -1)" title="Decrease quantity">−</button>
-                                <span class="qty-display">${qty}</span>
-                                <button class="btn-small btn-increase" onclick="updateStock(${id}, 1)" title="Increase quantity">+</button>
+                                <button class="btn-small btn-decrease" onclick="updateStock(${item.productId}, -1)" title="Decrease quantity">−</button>
+                                <span class="qty-display">${item.quantity}</span>
+                                <button class="btn-small btn-increase" onclick="updateStock(${item.productId}, 1)" title="Increase quantity">+</button>
                             </div>
                         </td>
                         <td><strong>$${totalValue.toFixed(2)}</strong></td>
-                        <td><button class="btn-small btn-delete" onclick="deleteProduct(${id})">Delete</button></td>
+                        <td>${item.distributor.name}</td>
+                        <td>
+                            <button class="btn-small btn-delete" onclick="deleteProduct(${item.productId})">Delete</button>
+                            ${distributorContact}
+                        </td>
                     `;
+
                     tbody.appendChild(tr);
-                }
+                });
             }
 
-            document.getElementById('productCount').innerText = count;
-            document.getElementById('totalValue').innerText = '$' + Module.ccall('get_total_value', 'number', [], []).toFixed(2);
+            document.getElementById('productCount').innerText = inventory.length;
+            const totalInventoryValue = inventory.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            document.getElementById('totalValue').innerText = '$' + totalInventoryValue.toFixed(2);
         }
 
-        Module.onRuntimeInitialized = () => {
-            wasmReady = true;
+        document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loadingSpinner').classList.remove('active');
             renderTable();
-            showAlert('✓ Application loaded successfully!', 'success');
-        };
+            showAlert('✓ Application loaded successfully (JS mode)!', 'success');
+        });
     </script>
 </body>
 </html>
