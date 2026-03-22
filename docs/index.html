@@ -282,11 +282,79 @@
             color: #999;
         }
 
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            opacity: 0.5;
+            border: 1px solid #e0e0e0;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-group button {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-group button:hover {
+            background: #5a6268;
+        }
+
+        .low-stock-action {
+            margin-top: 8px;
+            padding: 8px;
+            background: #fff3cd;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+        }
+
+        .expired {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .expiring-soon {
+            color: #ff9800;
+            font-weight: bold;
         }
 
         .loading {
@@ -470,6 +538,22 @@
                     <input type="number" id="pQty" placeholder="50" min="0" max="999999">
                 </div>
                 <div class="form-group">
+                    <label for="pDistName">Distributor Name (optional)</label>
+                    <input type="text" id="pDistName" placeholder="Supplier ABC" maxlength="64">
+                </div>
+                <div class="form-group">
+                    <label for="pDistEmail">Distributor Email (optional)</label>
+                    <input type="email" id="pDistEmail" placeholder="supplier@example.com" maxlength="128">
+                </div>
+                <div class="form-group">
+                    <label for="pDistPhone">Distributor Phone (optional)</label>
+                    <input type="tel" id="pDistPhone" placeholder="+1234567890" maxlength="32">
+                </div>
+                <div class="form-group">
+                    <label for="pExpiry">Expiry Date (optional)</label>
+                    <input type="date" id="pExpiry" min="2024-01-01">
+                </div>
+                <div class="form-group">
                     <button class="btn-primary" onclick="addProduct()">Add Product</button>
                 </div>
             </div>
@@ -477,6 +561,45 @@
 
         <div class="card">
             <h2>📊 Current Inventory</h2>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="filterName">Search by Name:</label>
+                        <input type="text" id="filterName" placeholder="Enter product name..." oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMinPrice">Min Price:</label>
+                        <input type="number" id="filterMinPrice" step="0.01" placeholder="0.00" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMaxPrice">Max Price:</label>
+                        <input type="number" id="filterMaxPrice" step="0.01" placeholder="999.99" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMinQty">Min Quantity:</label>
+                        <input type="number" id="filterMinQty" placeholder="0" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMaxQty">Max Quantity:</label>
+                        <input type="number" id="filterMaxQty" placeholder="999" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterExpiry">Expiry Status:</label>
+                        <select id="filterExpiry" onchange="applyFilters()">
+                            <option value="">All</option>
+                            <option value="expired">Expired</option>
+                            <option value="expiring-soon">Expiring Soon (7 days)</option>
+                            <option value="valid">Valid</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn-small" onclick="clearFilters()">Clear Filters</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="loading active" id="loadingSpinner">
                 <div class="spinner"></div>
                 <p>Loading WASM Engine...</p>
@@ -485,11 +608,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
+                            <th onclick="sortTable('id')" style="cursor: pointer;">ID ▲</th>
+                            <th onclick="sortTable('name')" style="cursor: pointer;">Name ▲</th>
+                            <th onclick="sortTable('price')" style="cursor: pointer;">Price ▲</th>
+                            <th onclick="sortTable('quantity')" style="cursor: pointer;">Quantity ▲</th>
+                            <th onclick="sortTable('expiry')" style="cursor: pointer;">Expiry Date ▲</th>
                             <th>Total Value</th>
+                            <th>Distributor</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -506,9 +631,24 @@
         </div>
     </div>
 
-    <script src="stock.js"></script>
     <script>
-        let wasmReady = false;
+        const inventory = [];
+        const MAX_PRODUCTS = 1000;
+        const LOW_STOCK_THRESHOLD = 5;
+
+        let currentSortField = 'id';
+        let currentSortDirection = 'asc';
+        let filteredInventory = [];
+
+        function isValidEmail(email) {
+            if (!email) return true;
+            return /^\w+([.-]?\w+)*@\w+([.-]?\w+)*\.\w{2,}$/.test(email);
+        }
+
+        function isValidPhone(phone) {
+            if (!phone) return true;
+            return /^[\d+()\-\s]{6,32}$/.test(phone);
+        }
 
         function showAlert(message, type = 'success') {
             const alertContainer = document.getElementById('alertContainer');
@@ -525,6 +665,10 @@
             document.getElementById('pName').value = '';
             document.getElementById('pPrice').value = '';
             document.getElementById('pQty').value = '';
+            document.getElementById('pDistName').value = '';
+            document.getElementById('pDistEmail').value = '';
+            document.getElementById('pDistPhone').value = '';
+            document.getElementById('pExpiry').value = '';
         }
 
         function clearInputErrors() {
@@ -560,123 +704,297 @@
             return isValid;
         }
 
-        function addProduct() {
-            if (!wasmReady) {
-                showAlert('WASM Engine not ready', 'error');
-                return;
-            }
+        function getProductIndexById(id) {
+            return inventory.findIndex(item => item.productId === id);
+        }
 
+        function addProduct() {
             if (!validateForm()) {
                 showAlert('Please fill in all fields correctly', 'error');
                 return;
             }
 
-            const id = parseInt(document.getElementById('pId').value);
+            if (inventory.length >= MAX_PRODUCTS) {
+                showAlert('❌ Inventory is full! Maximum capacity reached.', 'error');
+                return;
+            }
+
+            const id = parseInt(document.getElementById('pId').value, 10);
             const name = document.getElementById('pName').value.trim();
             const price = parseFloat(document.getElementById('pPrice').value);
-            const qty = parseInt(document.getElementById('pQty').value);
+            const qty = parseInt(document.getElementById('pQty').value, 10);
+            const distName = document.getElementById('pDistName').value.trim();
+            const distEmail = document.getElementById('pDistEmail').value.trim();
+            const distPhone = document.getElementById('pDistPhone').value.trim();
+            const expiryDate = document.getElementById('pExpiry').value;
 
-            const result = Module.ccall('add_product', 'number', ['number', 'string', 'number', 'number'], [id, name, price, qty]);
-            
-            if (result === -1) {
-                showAlert('❌ Inventory is full! Maximum capacity reached.', 'error');
-            } else if (result === 0) {
-                showAlert('❌ Product ID already exists! Use a different ID.', 'error');
-            } else {
-                showAlert('✓ Product added successfully!', 'success');
-                clearForm();
-                renderTable();
+            if (!isValidEmail(distEmail)) {
+                showAlert('❌ Supplier email is invalid.', 'error');
+                return;
             }
+
+            if (!isValidPhone(distPhone)) {
+                showAlert('❌ Supplier phone is invalid.', 'error');
+                return;
+            }
+
+            if (getProductIndexById(id) !== -1) {
+                showAlert('❌ Product ID already exists! Use a different ID.', 'error');
+                return;
+            }
+
+            inventory.push({
+                productId: id,
+                name,
+                price,
+                quantity: qty,
+                expiryDate: expiryDate || null,
+                distributor: {
+                    name: distName || 'Not specified',
+                    email: distEmail,
+                    phone: distPhone
+                }
+            });
+            showAlert('✓ Product added successfully!', 'success');
+            clearForm();
+            applyFilters();
         }
 
         function updateStock(id, amount) {
-            if (!wasmReady) {
-                showAlert('WASM Engine not ready', 'error');
+            const idx = getProductIndexById(id);
+            if (idx === -1) {
+                showAlert('❌ Product not found!', 'error');
                 return;
             }
 
-            const result = Module.ccall('update_product_stock', 'number', ['number', 'number'], [id, amount]);
-            if (result === -1) {
+            if (inventory[idx].quantity + amount < 0) {
                 showAlert('❌ Insufficient stock! Cannot sell more than available.', 'warning');
-            } else if (result === 0) {
-                showAlert('❌ Product not found!', 'error');
-            } else {
-                renderTable();
+                return;
             }
+
+            inventory[idx].quantity += amount;
+            applyFilters();
+        }
+
+        function sortTable(field) {
+            if (currentSortField === field) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortDirection = 'asc';
+            }
+
+            // Update header indicators
+            document.querySelectorAll('th').forEach(th => {
+                th.textContent = th.textContent.replace(' ▲', '').replace(' ▼', '');
+            });
+            const currentHeader = document.querySelector(`th[onclick="sortTable('${field}')"]`);
+            currentHeader.textContent += currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const nameFilter = document.getElementById('filterName').value.toLowerCase();
+            const minPrice = parseFloat(document.getElementById('filterMinPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('filterMaxPrice').value) || Infinity;
+            const minQty = parseInt(document.getElementById('filterMinQty').value) || 0;
+            const maxQty = parseInt(document.getElementById('filterMaxQty').value) || Infinity;
+            const expiryFilter = document.getElementById('filterExpiry').value;
+
+            filteredInventory = inventory.filter(item => {
+                // Name filter
+                if (nameFilter && !item.name.toLowerCase().includes(nameFilter)) {
+                    return false;
+                }
+
+                // Price filter
+                if (item.price < minPrice || item.price > maxPrice) {
+                    return false;
+                }
+
+                // Quantity filter
+                if (item.quantity < minQty || item.quantity > maxQty) {
+                    return false;
+                }
+
+                // Expiry filter
+                if (expiryFilter) {
+                    const today = new Date();
+                    const expiryDate = item.expiryDate ? new Date(item.expiryDate) : null;
+
+                    if (expiryFilter === 'expired' && (!expiryDate || expiryDate >= today)) {
+                        return false;
+                    }
+                    if (expiryFilter === 'expiring-soon') {
+                        const sevenDaysFromNow = new Date();
+                        sevenDaysFromNow.setDate(today.getDate() + 7);
+                        if (!expiryDate || expiryDate > sevenDaysFromNow || expiryDate < today) {
+                            return false;
+                        }
+                    }
+                    if (expiryFilter === 'valid' && (!expiryDate || expiryDate < today)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Sort filtered results
+            filteredInventory.sort((a, b) => {
+                let aVal, bVal;
+
+                switch (currentSortField) {
+                    case 'id':
+                        aVal = a.productId;
+                        bVal = b.productId;
+                        break;
+                    case 'name':
+                        aVal = a.name.toLowerCase();
+                        bVal = b.name.toLowerCase();
+                        break;
+                    case 'price':
+                        aVal = a.price;
+                        bVal = b.price;
+                        break;
+                    case 'quantity':
+                        aVal = a.quantity;
+                        bVal = b.quantity;
+                        break;
+                    case 'expiry':
+                        aVal = a.expiryDate ? new Date(a.expiryDate) : new Date('9999-12-31');
+                        bVal = b.expiryDate ? new Date(b.expiryDate) : new Date('9999-12-31');
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (aVal < bVal) return currentSortDirection === 'asc' ? -1 : 1;
+                if (aVal > bVal) return currentSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('filterName').value = '';
+            document.getElementById('filterMinPrice').value = '';
+            document.getElementById('filterMaxPrice').value = '';
+            document.getElementById('filterMinQty').value = '';
+            document.getElementById('filterMaxQty').value = '';
+            document.getElementById('filterExpiry').value = '';
+            applyFilters();
         }
 
         function deleteProduct(id) {
-            if (!wasmReady) {
-                showAlert('WASM Engine not ready', 'error');
+            const idx = getProductIndexById(id);
+            if (idx === -1) {
+                showAlert('❌ Product not found!', 'error');
                 return;
             }
 
-            if (confirm(`⚠️ Are you sure you want to delete product ID ${id}? This cannot be undone.`)) {
-                const result = Module.ccall('delete_product_by_id', 'number', ['number'], [id]);
-                if (result === 0) {
-                    showAlert('❌ Product not found!', 'error');
-                } else {
-                    showAlert('✓ Product deleted successfully!', 'success');
-                    renderTable();
-                }
+            if (!confirm(`⚠️ Are you sure you want to delete product ID ${id}? This cannot be undone.`)) {
+                return;
             }
+
+            inventory.splice(idx, 1);
+            showAlert('✓ Product deleted successfully!', 'success');
+            applyFilters();
         }
 
         function renderTable() {
-            const count = Module.ccall('get_product_count', 'number', [], []);
             const tbody = document.getElementById('inventoryBody');
             const tableContainer = document.getElementById('tableContainer');
             const emptyState = document.getElementById('emptyState');
 
             tbody.innerHTML = '';
 
-            if (count === 0) {
+            if (filteredInventory.length === 0) {
                 tableContainer.style.display = 'none';
                 emptyState.style.display = 'block';
             } else {
                 emptyState.style.display = 'none';
                 tableContainer.style.display = 'block';
 
-                for (let i = 0; i < count; i++) {
-                    const id = Module.ccall('get_product_id', 'number', ['number'], [i]);
-                    const name = Module.ccall('get_product_name', 'string', ['number'], [i]);
-                    const price = Module.ccall('get_product_price', 'number', ['number'], [i]);
-                    const qty = Module.ccall('get_product_quantity', 'number', ['number'], [i]);
-                    const totalValue = price * qty;
-
+                filteredInventory.forEach(item => {
+                    const totalValue = item.price * item.quantity;
                     const tr = document.createElement('tr');
-                    if (qty < 5) tr.className = 'low-stock';
+                    if (item.quantity < LOW_STOCK_THRESHOLD) tr.className = 'low-stock';
 
-                    const lowStockWarning = qty < 5 ? '<span class="low-stock-badge">Low Stock</span>' : '';
+                    const lowStockWarning = item.quantity < LOW_STOCK_THRESHOLD ? '<span class="low-stock-badge">Low Stock</span>' : '';
+
+                    // Expiry date formatting and status
+                    let expiryDisplay = 'No expiry';
+                    let expiryClass = '';
+                    if (item.expiryDate) {
+                        const expiryDate = new Date(item.expiryDate);
+                        const today = new Date();
+                        const sevenDaysFromNow = new Date();
+                        sevenDaysFromNow.setDate(today.getDate() + 7);
+
+                        expiryDisplay = expiryDate.toLocaleDateString();
+
+                        if (expiryDate < today) {
+                            expiryClass = 'expired';
+                            expiryDisplay += ' (Expired)';
+                        } else if (expiryDate <= sevenDaysFromNow) {
+                            expiryClass = 'expiring-soon';
+                            expiryDisplay += ' (Expiring Soon)';
+                        }
+                    }
+
+                    let distributorContact = '';
+                    if (item.quantity < LOW_STOCK_THRESHOLD) {
+                        distributorContact = '<div class="low-stock-action"><strong>Low stock!</strong><br>';
+                        if (item.distributor.phone) {
+                            distributorContact += `<a href="tel:${item.distributor.phone}" class="btn-small btn-primary" style="margin-right:6px; display:inline-block; margin-top:4px;">Call Distributor</a>`;
+                        }
+                        if (item.distributor.email) {
+                            distributorContact += `<a href="mailto:${item.distributor.email}?subject=Restock%20request%20for%20${encodeURIComponent(item.name)}" class="btn-small btn-primary" style="display:inline-block; margin-top:4px;">Email Distributor</a>`;
+                        }
+                        if (!item.distributor.phone && !item.distributor.email) {
+                            distributorContact += '<span style="font-size:0.85em; color:#666;">Distributor contact not provided</span>';
+                        }
+                        distributorContact += '</div>';
+                    }
 
                     tr.innerHTML = `
-                        <td><strong>${id}</strong></td>
-                        <td>${name}${lowStockWarning}</td>
-                        <td>$${price.toFixed(2)}</td>
+                        <td><strong>${item.productId}</strong></td>
+                        <td>${item.name}${lowStockWarning}</td>
+                        <td>$${item.price.toFixed(2)}</td>
                         <td>
                             <div class="qty-controls">
-                                <button class="btn-small btn-decrease" onclick="updateStock(${id}, -1)" title="Decrease quantity">−</button>
-                                <span class="qty-display">${qty}</span>
-                                <button class="btn-small btn-increase" onclick="updateStock(${id}, 1)" title="Increase quantity">+</button>
+                                <button class="btn-small btn-decrease" onclick="updateStock(${item.productId}, -1)" title="Decrease quantity">−</button>
+                                <span class="qty-display">${item.quantity}</span>
+                                <button class="btn-small btn-increase" onclick="updateStock(${item.productId}, 1)" title="Increase quantity">+</button>
                             </div>
                         </td>
+                        <td class="${expiryClass}">${expiryDisplay}</td>
                         <td><strong>$${totalValue.toFixed(2)}</strong></td>
-                        <td><button class="btn-small btn-delete" onclick="deleteProduct(${id})">Delete</button></td>
+                        <td>${item.distributor.name}</td>
+                        <td>
+                            <button class="btn-small btn-delete" onclick="deleteProduct(${item.productId})">Delete</button>
+                            ${distributorContact}
+                        </td>
                     `;
+
                     tbody.appendChild(tr);
-                }
+                });
             }
 
-            document.getElementById('productCount').innerText = count;
-            document.getElementById('totalValue').innerText = '$' + Module.ccall('get_total_value', 'number', [], []).toFixed(2);
+            document.getElementById('productCount').innerText = filteredInventory.length;
+            const totalInventoryValue = filteredInventory.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            document.getElementById('totalValue').innerText = '$' + totalInventoryValue.toFixed(2);
         }
 
-        Module.onRuntimeInitialized = () => {
-            wasmReady = true;
+        document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loadingSpinner').classList.remove('active');
+            filteredInventory = [...inventory];
             renderTable();
-            showAlert('✓ Application loaded successfully!', 'success');
-        };
+            showAlert('✓ Application loaded successfully (JS mode)!', 'success');
+        });
     </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Manager</title>
+    <title>Stock Manager - Role Selection</title>
     <style>
         * {
             margin: 0;
@@ -17,37 +17,266 @@
             min-height: 100vh;
             color: #333;
             padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 800px;
+            width: 100%;
         }
 
         .header {
             background: white;
-            padding: 30px;
+            padding: 40px;
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
+            text-align: center;
             animation: slideIn 0.5s ease;
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             color: #667eea;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 15px;
         }
 
         .header p {
             color: #666;
-            font-size: 1.1em;
+            font-size: 1.2em;
         }
 
-        .stats-bar {
+        .role-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .role-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .role-card.owner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .role-card.owner:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+
+        .role-card.cashier {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .role-card.cashier:hover {
+            background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+        }
+
+        .role-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .role-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .role-description {
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .role-features {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        .role-features h4 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .role-features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .role-features li {
+            padding: 5px 0;
+            font-size: 0.95em;
+        }
+
+        .role-features li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .role-card.owner .role-features li:before {
+            color: #fff;
+        }
+
+        .role-card.cashier .role-features li:before {
+            color: #fff;
+        }
+
+        .btn-select {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-select:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .role-card.owner .btn-select:hover {
+            color: #667eea;
+        }
+
+        .role-card.cashier .btn-select:hover {
+            color: #48bb78;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .role-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .role-card {
+                padding: 30px 20px;
+            }
+
+            .role-icon {
+                font-size: 3em;
+            }
+
+            .role-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Stock Manager</h1>
+            <p>Select your role to continue</p>
+        </div>
+
+        <div class="role-selection">
+            <div class="role-card owner" onclick="selectRole('owner')">
+                <div class="role-icon">👑</div>
+                <div class="role-title">Owner</div>
+                <div class="role-description">
+                    Full administrative access to manage multiple shops, track profits, and oversee operations.
+                </div>
+                <div class="role-features">
+                    <h4>Key Features:</h4>
+                    <ul>
+                        <li>Manage multiple shop locations</li>
+                        <li>View inventory across all shops</li>
+                        <li>Track profits and analytics</li>
+                        <li>Place bulk orders</li>
+                        <li>Remove expired items</li>
+                        <li>Full inventory management</li>
+                    </ul>
+                </div>
+                <a href="owner.html" class="btn-select">Enter as Owner</a>
+            </div>
+
+            <div class="role-card cashier" onclick="selectRole('cashier')">
+                <div class="role-icon">🛒</div>
+                <div class="role-title">Cashier</div>
+                <div class="role-description">
+                    Point-of-sale interface for handling customer transactions and basic stock viewing.
+                </div>
+                <div class="role-features">
+                    <h4>Key Features:</h4>
+                    <ul>
+                        <li>Customer checkout system</li>
+                        <li>Generate bills and receipts</li>
+                        <li>View available stock</li>
+                        <li>Process sales transactions</li>
+                        <li>Update stock on sales only</li>
+                        <li>Simple, focused interface</li>
+                    </ul>
+                </div>
+                <a href="cashier.html" class="btn-select">Enter as Cashier</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            // Store the selected role in localStorage for potential future use
+            localStorage.setItem('userRole', role);
+        }
+
+        // Add click animation effect
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'A') {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
@@ -282,11 +511,79 @@
             color: #999;
         }
 
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            opacity: 0.5;
+            border: 1px solid #e0e0e0;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-group button {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-group button:hover {
+            background: #5a6268;
+        }
+
+        .low-stock-action {
+            margin-top: 8px;
+            padding: 8px;
+            background: #fff3cd;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+        }
+
+        .expired {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .expiring-soon {
+            color: #ff9800;
+            font-weight: bold;
         }
 
         .loading {
@@ -482,6 +779,10 @@
                     <input type="tel" id="pDistPhone" placeholder="+1234567890" maxlength="32">
                 </div>
                 <div class="form-group">
+                    <label for="pExpiry">Expiry Date (optional)</label>
+                    <input type="date" id="pExpiry" min="2024-01-01">
+                </div>
+                <div class="form-group">
                     <button class="btn-primary" onclick="addProduct()">Add Product</button>
                 </div>
             </div>
@@ -489,6 +790,45 @@
 
         <div class="card">
             <h2>📊 Current Inventory</h2>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="filterName">Search by Name:</label>
+                        <input type="text" id="filterName" placeholder="Enter product name..." oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMinPrice">Min Price:</label>
+                        <input type="number" id="filterMinPrice" step="0.01" placeholder="0.00" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMaxPrice">Max Price:</label>
+                        <input type="number" id="filterMaxPrice" step="0.01" placeholder="999.99" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMinQty">Min Quantity:</label>
+                        <input type="number" id="filterMinQty" placeholder="0" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterMaxQty">Max Quantity:</label>
+                        <input type="number" id="filterMaxQty" placeholder="999" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterExpiry">Expiry Status:</label>
+                        <select id="filterExpiry" onchange="applyFilters()">
+                            <option value="">All</option>
+                            <option value="expired">Expired</option>
+                            <option value="expiring-soon">Expiring Soon (7 days)</option>
+                            <option value="valid">Valid</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn-small" onclick="clearFilters()">Clear Filters</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="loading active" id="loadingSpinner">
                 <div class="spinner"></div>
                 <p>Loading WASM Engine...</p>
@@ -497,10 +837,11 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
+                            <th onclick="sortTable('id')" style="cursor: pointer;">ID ▲</th>
+                            <th onclick="sortTable('name')" style="cursor: pointer;">Name ▲</th>
+                            <th onclick="sortTable('price')" style="cursor: pointer;">Price ▲</th>
+                            <th onclick="sortTable('quantity')" style="cursor: pointer;">Quantity ▲</th>
+                            <th onclick="sortTable('expiry')" style="cursor: pointer;">Expiry Date ▲</th>
                             <th>Total Value</th>
                             <th>Distributor</th>
                             <th>Actions</th>
@@ -523,6 +864,10 @@
         const inventory = [];
         const MAX_PRODUCTS = 1000;
         const LOW_STOCK_THRESHOLD = 5;
+
+        let currentSortField = 'id';
+        let currentSortDirection = 'asc';
+        let filteredInventory = [];
 
         function isValidEmail(email) {
             if (!email) return true;
@@ -552,6 +897,7 @@
             document.getElementById('pDistName').value = '';
             document.getElementById('pDistEmail').value = '';
             document.getElementById('pDistPhone').value = '';
+            document.getElementById('pExpiry').value = '';
         }
 
         function clearInputErrors() {
@@ -609,6 +955,7 @@
             const distName = document.getElementById('pDistName').value.trim();
             const distEmail = document.getElementById('pDistEmail').value.trim();
             const distPhone = document.getElementById('pDistPhone').value.trim();
+            const expiryDate = document.getElementById('pExpiry').value;
 
             if (!isValidEmail(distEmail)) {
                 showAlert('❌ Supplier email is invalid.', 'error');
@@ -630,6 +977,7 @@
                 name,
                 price,
                 quantity: qty,
+                expiryDate: expiryDate || null,
                 distributor: {
                     name: distName || 'Not specified',
                     email: distEmail,
@@ -638,7 +986,7 @@
             });
             showAlert('✓ Product added successfully!', 'success');
             clearForm();
-            renderTable();
+            applyFilters();
         }
 
         function updateStock(id, amount) {
@@ -654,7 +1002,119 @@
             }
 
             inventory[idx].quantity += amount;
+            applyFilters();
+        }
+
+        function sortTable(field) {
+            if (currentSortField === field) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortDirection = 'asc';
+            }
+
+            // Update header indicators
+            document.querySelectorAll('th').forEach(th => {
+                th.textContent = th.textContent.replace(' ▲', '').replace(' ▼', '');
+            });
+            const currentHeader = document.querySelector(`th[onclick="sortTable('${field}')"]`);
+            currentHeader.textContent += currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const nameFilter = document.getElementById('filterName').value.toLowerCase();
+            const minPrice = parseFloat(document.getElementById('filterMinPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('filterMaxPrice').value) || Infinity;
+            const minQty = parseInt(document.getElementById('filterMinQty').value) || 0;
+            const maxQty = parseInt(document.getElementById('filterMaxQty').value) || Infinity;
+            const expiryFilter = document.getElementById('filterExpiry').value;
+
+            filteredInventory = inventory.filter(item => {
+                // Name filter
+                if (nameFilter && !item.name.toLowerCase().includes(nameFilter)) {
+                    return false;
+                }
+
+                // Price filter
+                if (item.price < minPrice || item.price > maxPrice) {
+                    return false;
+                }
+
+                // Quantity filter
+                if (item.quantity < minQty || item.quantity > maxQty) {
+                    return false;
+                }
+
+                // Expiry filter
+                if (expiryFilter) {
+                    const today = new Date();
+                    const expiryDate = item.expiryDate ? new Date(item.expiryDate) : null;
+
+                    if (expiryFilter === 'expired' && (!expiryDate || expiryDate >= today)) {
+                        return false;
+                    }
+                    if (expiryFilter === 'expiring-soon') {
+                        const sevenDaysFromNow = new Date();
+                        sevenDaysFromNow.setDate(today.getDate() + 7);
+                        if (!expiryDate || expiryDate > sevenDaysFromNow || expiryDate < today) {
+                            return false;
+                        }
+                    }
+                    if (expiryFilter === 'valid' && (!expiryDate || expiryDate < today)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Sort filtered results
+            filteredInventory.sort((a, b) => {
+                let aVal, bVal;
+
+                switch (currentSortField) {
+                    case 'id':
+                        aVal = a.productId;
+                        bVal = b.productId;
+                        break;
+                    case 'name':
+                        aVal = a.name.toLowerCase();
+                        bVal = b.name.toLowerCase();
+                        break;
+                    case 'price':
+                        aVal = a.price;
+                        bVal = b.price;
+                        break;
+                    case 'quantity':
+                        aVal = a.quantity;
+                        bVal = b.quantity;
+                        break;
+                    case 'expiry':
+                        aVal = a.expiryDate ? new Date(a.expiryDate) : new Date('9999-12-31');
+                        bVal = b.expiryDate ? new Date(b.expiryDate) : new Date('9999-12-31');
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (aVal < bVal) return currentSortDirection === 'asc' ? -1 : 1;
+                if (aVal > bVal) return currentSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
             renderTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('filterName').value = '';
+            document.getElementById('filterMinPrice').value = '';
+            document.getElementById('filterMaxPrice').value = '';
+            document.getElementById('filterMinQty').value = '';
+            document.getElementById('filterMaxQty').value = '';
+            document.getElementById('filterExpiry').value = '';
+            applyFilters();
         }
 
         function deleteProduct(id) {
@@ -670,7 +1130,7 @@
 
             inventory.splice(idx, 1);
             showAlert('✓ Product deleted successfully!', 'success');
-            renderTable();
+            applyFilters();
         }
 
         function renderTable() {
@@ -680,19 +1140,39 @@
 
             tbody.innerHTML = '';
 
-            if (inventory.length === 0) {
+            if (filteredInventory.length === 0) {
                 tableContainer.style.display = 'none';
                 emptyState.style.display = 'block';
             } else {
                 emptyState.style.display = 'none';
                 tableContainer.style.display = 'block';
 
-                inventory.forEach(item => {
+                filteredInventory.forEach(item => {
                     const totalValue = item.price * item.quantity;
                     const tr = document.createElement('tr');
                     if (item.quantity < LOW_STOCK_THRESHOLD) tr.className = 'low-stock';
 
                     const lowStockWarning = item.quantity < LOW_STOCK_THRESHOLD ? '<span class="low-stock-badge">Low Stock</span>' : '';
+
+                    // Expiry date formatting and status
+                    let expiryDisplay = 'No expiry';
+                    let expiryClass = '';
+                    if (item.expiryDate) {
+                        const expiryDate = new Date(item.expiryDate);
+                        const today = new Date();
+                        const sevenDaysFromNow = new Date();
+                        sevenDaysFromNow.setDate(today.getDate() + 7);
+
+                        expiryDisplay = expiryDate.toLocaleDateString();
+
+                        if (expiryDate < today) {
+                            expiryClass = 'expired';
+                            expiryDisplay += ' (Expired)';
+                        } else if (expiryDate <= sevenDaysFromNow) {
+                            expiryClass = 'expiring-soon';
+                            expiryDisplay += ' (Expiring Soon)';
+                        }
+                    }
 
                     let distributorContact = '';
                     if (item.quantity < LOW_STOCK_THRESHOLD) {
@@ -720,6 +1200,7 @@
                                 <button class="btn-small btn-increase" onclick="updateStock(${item.productId}, 1)" title="Increase quantity">+</button>
                             </div>
                         </td>
+                        <td class="${expiryClass}">${expiryDisplay}</td>
                         <td><strong>$${totalValue.toFixed(2)}</strong></td>
                         <td>${item.distributor.name}</td>
                         <td>
@@ -732,13 +1213,14 @@
                 });
             }
 
-            document.getElementById('productCount').innerText = inventory.length;
-            const totalInventoryValue = inventory.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            document.getElementById('productCount').innerText = filteredInventory.length;
+            const totalInventoryValue = filteredInventory.reduce((sum, item) => sum + item.price * item.quantity, 0);
             document.getElementById('totalValue').innerText = '$' + totalInventoryValue.toFixed(2);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loadingSpinner').classList.remove('active');
+            filteredInventory = [...inventory];
             renderTable();
             showAlert('✓ Application loaded successfully (JS mode)!', 'success');
         });

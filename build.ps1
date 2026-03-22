@@ -32,9 +32,11 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# Copy the updated HTML
-Write-Host "📋 Copying HTML..." -ForegroundColor Cyan
+# Copy the updated HTML files
+Write-Host "📋 Copying HTML files..." -ForegroundColor Cyan
 Copy-Item index.html docs/index.html -Force
+Copy-Item owner.html docs/owner.html -Force
+Copy-Item cashier.html docs/cashier.html -Force
 
 Write-Host "✅ Build complete!" -ForegroundColor Green
 Write-Host "📁 Output directory: ./docs" -ForegroundColor Green

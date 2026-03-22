@@ -1,47 +1,57 @@
 # 📦 Stock Manager
 
-A professional **Inventory Management System** written in C with a beautiful WebAssembly web interface. Perfect for managing products, stock levels, and inventory values.
+A professional **Multi-Role Inventory Management System** written in C with a beautiful WebAssembly web interface. Designed for supermarkets and retail chains with separate dashboards for Owners and Cashiers.
 
 ![Status](https://img.shields.io/badge/status-production%20ready-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/built%20with-C%20%2B%20WebAssembly-orange)
 
+### 🚀 [Live Demo on Vercel](https://stock-manager.vercel.app/)
+*(Note: If you are deploying yourself, replace this URL with your actual Vercel project link)*
+
 ## ✨ Features
 
-- ✅ **Add/Edit/Delete Products** - Manage product database with ID, name, price, quantity
-- ✅ **Stock Management** - Increase/decrease inventory quantities easily
-- ✅ **Real-time Calculations** - Automatic total inventory value calculation
-- ✅ **Low Stock Alerts** - Visual warnings for items below threshold (< 5 units)
-- ✅ **Search by ID** - Quick product lookup
+### 👑 Owner Dashboard
+- ✅ **Multi-Shop Management** - Control inventory across multiple locations
+- ✅ **Profit Analytics** - Track revenue and performance per shop
+- ✅ **Bulk Ordering** - Place orders for restocking across locations
+- ✅ **Expired Item Removal** - System-wide expired product management
+- ✅ **Comprehensive Reports** - Detailed analytics and business insights
+- ✅ **Real-time Alerts** - Low stock and expiration notifications
+
+### 🛒 Cashier Terminal
+- ✅ **Point-of-Sale System** - Fast checkout with barcode scanning
+- ✅ **Real-time Stock Updates** - Automatic inventory reduction on sales
+- ✅ **Receipt Generation** - Professional itemized receipts
+- ✅ **Product Search** - Quick lookup by name or barcode
+- ✅ **Sales Tracking** - Transaction history and reporting
+
+### 🔧 Core Features
+- ✅ **Add/Edit/Delete Products** - Complete product database management
+- ✅ **Stock Management** - Increase/decrease inventory quantities
+- ✅ **Real-time Calculations** - Automatic total value computation
+- ✅ **Low Stock Alerts** - Visual warnings for items below threshold
 - ✅ **Responsive Design** - Works on desktop, tablet, and mobile
 - ✅ **Input Validation** - Robust error handling and user feedback
-- ✅ **Fast Performance** - WebAssembly-based backend for native speed
+- ✅ **Role-Based Access** - Separate interfaces for different user types
 
-## 📋 Required C Concepts
+## 🌍 Deployment Options
 
-- ✓ `switch/case` control structures
-- ✓ 10+ user-defined functions
-- ✓ `struct Product` - Complex data structure
-- ✓ Dynamic arrays and memory management
-- ✓ Input validation with robust error handling
-- ✓ Total inventory calculations
+### Option 1: Vercel (Recommended)
+1. Push your code to GitHub.
+2. Go to vercel.com and click **Import Project**.
+3. Select your repository.
+4. Set **Output Directory** to `docs`.
+5. Deploy!
 
-## 🚀 Quick Start
+### Option 2: GitHub Pages
+1. Build the project locally and push to your main branch.
+2. Go to your repository **Settings** → **Pages**.
+3. Select **Deploy from a branch**.
+4. Choose the **main** branch, and the `/docs` folder.
+5. Click Save. Your site will be live in 1-2 minutes!
 
-### Online Demo (No Installation Required)
-
-Visit the live deployment: [GitHub Pages Link](docs/)
-
-Just open `docs/index.html` in your browser!
-
-### Local Development
-
-#### Prerequisites
-- Emscripten toolchain
-- A C compiler (gcc or clang)
-- Node.js or Python (for local server)
-
-#### Build & Run Web Version
+## 🚀 Local Development Quick Start
 
 **Windows (PowerShell):**
 ```powershell
@@ -79,11 +89,14 @@ stock_manager.exe
 ```
 Stock-Manager/
 ├── main.c                      # C implementation with WASM exports
-├── index.html                  # Original HTML (for reference)
+├── index.html                  # Role selection page
+├── owner.html                  # Owner dashboard interface
+├── cashier.html                # Cashier POS interface
 ├── build.sh                    # Linux/macOS build script
 ├── build.ps1                   # Windows PowerShell build script
+├── QUICK_START.md              # Quick start guide
 ├── docs/
-│   ├── index.html             # Production HTML (deployed)
+│   ├── index.html             # Production HTML (legacy)
 │   ├── stock.js               # WebAssembly interface
 │   ├── stock.wasm             # Compiled C code
 │   └── .nojekyll              # GitHub Pages config
@@ -153,6 +166,19 @@ The modern, responsive interface includes:
 
 ## 💡 Usage Tips
 
+### For Owners
+1. **Daily Operations**: Check alerts, review profit summaries, place bulk orders
+2. **Multi-Shop Management**: Switch between locations to manage inventory
+3. **Analytics**: Use reports to track performance and make business decisions
+4. **Stock Control**: Remove expired items and monitor low-stock alerts
+
+### For Cashiers
+1. **Quick Checkout**: Use barcode scanning or product search for fast transactions
+2. **Stock Awareness**: Check available quantities during sales
+3. **Receipts**: Generate professional receipts for customers
+4. **Accuracy**: System automatically updates stock levels after each sale
+
+### General Tips
 1. **Product ID**: Use unique IDs for each product (e.g., 101, 102, 103)
 2. **Stock Operations**: Use +/- buttons to adjust quantities for sales and purchases
 3. **Low Stock Alert**: Items with < 5 units are highlighted in yellow
@@ -211,10 +237,38 @@ cp index.html docs/index.html
 
 **Note:** Inventory data is stored in browser memory. It will be lost on refresh. For persistence, implement IndexedDB or localStorage.
 
-## 📝 Assignment Requirements
+## 📝 Project Features
 
 This project demonstrates:
 
+### 👑 Owner Dashboard Features
+1. **Multi-Shop Inventory Management**
+   - Cross-location inventory visibility
+   - Shop-specific stock tracking
+   - Bulk operations across locations
+
+2. **Business Analytics**
+   - Profit tracking per shop
+   - Performance metrics
+   - Sales analytics and reporting
+
+3. **Advanced Operations**
+   - Bulk ordering system
+   - Expired item management
+   - Alert system for critical issues
+
+### 🛒 Cashier Terminal Features
+1. **Point-of-Sale System**
+   - Product search and selection
+   - Barcode scanning support
+   - Real-time cart management
+
+2. **Transaction Processing**
+   - Automatic stock updates
+   - Receipt generation
+   - Payment processing interface
+
+### 🔧 Technical Implementation
 1. **C Programming Concepts**
    - Struct-based data structures
    - Array manipulation
@@ -227,26 +281,34 @@ This project demonstrates:
    - Modern CSS3 features
    - JavaScript DOM manipulation
    - WebAssembly integration
+   - Role-based user interfaces
 
 3. **Software Engineering**
    - Clean code organization
    - Error handling
    - User experience design
+   - Multi-role system architecture
    - Documentation
-   - Deployment procedures
 
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file for details
 
-## 🎓 Educational Use
+## 🎓 Use Cases
 
 This project is perfect for:
-- Learning C programming fundamentals
-- Understanding WebAssembly compilation
-- Web development with C backend
-- Assignment submissions
-- Portfolio projects
+- **Supermarket Chains** - Multi-location inventory management
+- **Retail Stores** - Point-of-sale and stock tracking
+- **Small Businesses** - Complete inventory control system
+- **Educational Projects** - Learning C, WebAssembly, and web development
+- **Portfolio Projects** - Showcasing full-stack development skills
+
+### Target Users
+- **Business Owners**: Comprehensive business management tools
+- **Store Managers**: Daily operations and analytics
+- **Cashiers**: Efficient point-of-sale operations
+- **Students**: Learning enterprise software development
+- **Developers**: Understanding WebAssembly and role-based systems
 
 ## 📞 Support
 

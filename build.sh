@@ -25,8 +25,10 @@ emcc main.c \
     --no-entry \
     -o docs/stock.js
 
-# Copy the updated HTML
+# Copy the updated HTML files
 cp index.html docs/index.html
+cp owner.html docs/owner.html
+cp cashier.html docs/cashier.html
 
 echo "✅ Build complete!"
 echo "📁 Output directory: ./docs"

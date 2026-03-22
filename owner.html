@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Manager - Owner Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .nav-bar {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-role {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-card.profit {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .stat-card.shops {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .stat-card.alerts {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s ease;
+        }
+
+        .card h2 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shop-selector {
+            margin-bottom: 20px;
+        }
+
+        .shop-selector select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            min-width: 200px;
+        }
+
+        .shop-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        thead {
+            background: #f8f9fa;
+            border-top: 2px solid #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9ff;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-card h3 {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .alert-item {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+
+        .alert-item.warning {
+            background: #fff3cd;
+            border-left-color: #ff9800;
+        }
+
+        .alert-item.danger {
+            background: #f8d7da;
+            border-left-color: #e74c3c;
+        }
+
+        .alert-item.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .recent-activity {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9em;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-time {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👑 Owner Dashboard</h1>
+            <p>Manage your multi-shop inventory empire</p>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-links">
+                <a href="#dashboard" class="active">Dashboard</a>
+                <a href="#inventory">Inventory</a>
+                <a href="#orders">Orders</a>
+                <a href="#analytics">Analytics</a>
+                <a href="#settings">Settings</a>
+            </div>
+            <div class="user-info">
+                <span class="user-role">👑 Owner</span>
+                <a href="index.html" class="action-btn" style="padding: 8px 16px; font-size: 0.9em;">Logout</a>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-value" id="totalProducts">0</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+            <div class="stat-card profit">
+                <div class="stat-value" id="totalProfit">$0.00</div>
+                <div class="stat-label">Total Profit</div>
+            </div>
+            <div class="stat-card shops">
+                <div class="stat-value" id="totalShops">3</div>
+                <div class="stat-label">Active Shops</div>
+            </div>
+            <div class="stat-card alerts">
+                <div class="stat-value" id="alertCount">0</div>
+                <div class="stat-label">Alerts</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="main-content">
+                <div class="card">
+                    <h2>🏪 Shop Overview</h2>
+                    <div class="shop-selector">
+                        <select id="shopSelector" onchange="switchShop()">
+                            <option value="all">All Shops</option>
+                            <option value="shop1">Downtown Store</option>
+                            <option value="shop2">Mall Branch</option>
+                            <option value="shop3">Online Warehouse</option>
+                        </select>
+                    </div>
+
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="addProduct()">➕ Add Product</button>
+                        <button class="action-btn" onclick="placeOrder()">📦 Place Order</button>
+                        <button class="action-btn" onclick="removeExpired()">🗑️ Remove Expired</button>
+                        <button class="action-btn" onclick="generateReport()">📊 Generate Report</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Shop</th>
+                                    <th>Product</th>
+                                    <th>Stock</th>
+                                    <th>Value</th>
+                                    <th>Profit</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryBody">
+                                <!-- Inventory data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="sidebar-card">
+                    <h3>🚨 Alerts</h3>
+                    <div id="alertsContainer">
+                        <div class="alert-item warning">
+                            <strong>Low Stock Alert</strong><br>
+                            Milk (Downtown) - Only 2 units left
+                        </div>
+                        <div class="alert-item danger">
+                            <strong>Expired Items</strong><br>
+                            Bread (Mall) - Expired 2 days ago
+                        </div>
+                        <div class="alert-item success">
+                            <strong>Order Delivered</strong><br>
+                            New shipment arrived at Online Warehouse
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>📈 Recent Activity</h3>
+                    <div class="recent-activity">
+                        <div class="activity-item">
+                            <strong>Product Sold</strong><br>
+                            Laptop - Downtown Store<br>
+                            <span class="activity-time">2 minutes ago</span>
+                        </div>
+                        <div class="activity-item">
+                            <strong>Order Placed</strong><br>
+                            50 units of Milk - Mall Branch<br>
+                            <span class="activity-time">15 minutes ago</span>
+                        </div>
+                        <div class="activity-item">
+                            <strong>Expired Removed</strong><br>
+                            5 units of Bread - Online Warehouse<br>
+                            <span class="activity-time">1 hour ago</span>
+                        </div>
+                        <div class="activity-item">
+                            <strong>New Product Added</strong><br>
+                            Wireless Mouse - All Shops<br>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>💰 Profit Summary</h3>
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #28a745;">$12,450.00</div>
+                        <div style="color: #666; font-size: 0.9em;">This Month</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9em;">
+                        <div>Downtown: <strong>$4,250</strong></div>
+                        <div>Mall: <strong>$5,200</strong></div>
+                        <div>Online: <strong>$3,000</strong></div>
+                        <div>Total: <strong>$12,450</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for demonstration
+        const mockInventory = [
+            { id: 1, name: 'Laptop', shop: 'Downtown', stock: 15, value: 22500, profit: 4500, status: 'Good' },
+            { id: 2, name: 'Milk', shop: 'Mall', stock: 2, value: 120, profit: 240, status: 'Low Stock' },
+            { id: 3, name: 'Bread', shop: 'Online', stock: 0, value: 0, profit: 0, status: 'Out of Stock' },
+            { id: 4, name: 'Mouse', shop: 'Downtown', stock: 25, value: 750, profit: 150, status: 'Good' }
+        ];
+
+        function switchShop() {
+            const shop = document.getElementById('shopSelector').value;
+            // In a real app, this would filter the inventory by shop
+            console.log('Switched to shop:', shop);
+            renderInventory();
+        }
+
+        function addProduct() {
+            alert('Add Product functionality - would open a modal or navigate to add product page');
+        }
+
+        function placeOrder() {
+            alert('Place Order functionality - would open order management interface');
+        }
+
+        function removeExpired() {
+            alert('Remove Expired functionality - would show expired items and allow removal');
+        }
+
+        function generateReport() {
+            alert('Generate Report functionality - would create and download inventory/profit reports');
+        }
+
+        function renderInventory() {
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = '';
+
+            mockInventory.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.shop}</td>
+                    <td>${item.name}</td>
+                    <td>${item.stock}</td>
+                    <td>$${item.value.toFixed(2)}</td>
+                    <td>$${item.profit.toFixed(2)}</td>
+                    <td>${item.status}</td>
+                    <td>
+                        <button onclick="editProduct(${item.id})">Edit</button>
+                        <button onclick="deleteProduct(${item.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editProduct(id) {
+            alert(`Edit product ${id} - would open edit modal`);
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                alert(`Product ${id} deleted`);
+                // In real app, would remove from data and re-render
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderInventory();
+            updateStats();
+        });
+
+        function updateStats() {
+            document.getElementById('totalProducts').textContent = mockInventory.length;
+            document.getElementById('totalProfit').textContent = '$' + mockInventory.reduce((sum, item) => sum + item.profit, 0).toFixed(2);
+            document.getElementById('alertCount').textContent = mockInventory.filter(item => item.status !== 'Good').length;
+        }
+    </script>
+</body>
+</html>
